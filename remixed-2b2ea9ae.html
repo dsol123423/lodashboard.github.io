@@ -1,0 +1,3103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Management Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .loan-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .loan-info input {
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .loan-info input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .tabs {
+            display: flex;
+            background: #ecf0f1;
+            overflow-x: auto;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .tab {
+            padding: 18px 25px;
+            cursor: pointer;
+            background: #bdc3c7;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            transition: all 0.3s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .tab:hover {
+            background: #95a5a6;
+        }
+
+        .tab.active {
+            background: white;
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+            margin-bottom: -3px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .section-header:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+        }
+
+        .section-header .toggle {
+            font-size: 24px;
+            transition: transform 0.3s;
+        }
+
+        .section.collapsed .toggle {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .section.collapsed .section-content {
+            display: none;
+        }
+
+        .checkbox-group {
+            margin: 15px 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .checkbox-item:hover {
+            border-color: #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+
+        .checkbox-item.checked {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #6c757d;
+            font-style: italic;
+            margin-left: 10px;
+        }
+
+        .input-group {
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            grid-column: 2;
+        }
+
+        .notes-area {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+
+        .calc-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+
+        .calc-section h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .calc-result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+            margin: 15px 0;
+        }
+
+        .reference-section {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #ffc107;
+        }
+
+        .reference-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .reference-section a {
+            color: #0056b3;
+            text-decoration: none;
+            display: block;
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .reference-section a:hover {
+            background: #3498db;
+            color: white;
+            padding-left: 15px;
+        }
+
+        .bonzo-reminder {
+            background: #d1ecf1;
+            border: 2px solid #0c5460;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            color: #0c5460;
+            font-weight: 600;
+        }
+
+        .table-section {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        td input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .loan-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #856404;
+        }
+
+        .status-complete {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-review {
+            background: #17a2b8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Loan Management Dashboard</h1>
+            <div class="loan-info">
+                <input type="text" id="loanNumber" placeholder="Loan Number" />
+                <input type="text" id="loanOfficer" placeholder="Loan Officer Name" />
+                <input type="text" id="borrowerName" placeholder="Borrower Name" />
+                <input type="text" id="leadSource" placeholder="Lead Source" />
+            </div>
+            <div class="progress-bar" style="margin-top: 20px;">
+                <div class="progress-fill" id="overallProgress" style="width: 0%;">0%</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'tab1')">🏠 Pre-Launch</button>
+            <button class="tab" onclick="openTab(event, 'tab2')">📝 Application</button>
+            <button class="tab" onclick="openTab(event, 'tab3')">✅ Pre-Qualified</button>
+            <button class="tab" onclick="openTab(event, 'tab4')">🔍 TBD Prep</button>
+            <button class="tab" onclick="openTab(event, 'tab5')">📑 Contract</button>
+            <button class="tab" onclick="openTab(event, 'tab6')">🏗️ Setup</button>
+            <button class="tab" onclick="openTab(event, 'tab7')">🔐 Processing</button>
+            <button class="tab" onclick="openTab(event, 'tab8')">💰 Closing</button>
+            <button class="tab" onclick="openTab(event, 'tab9')">📚 Reference</button>
+        </div>
+
+        <!-- TAB 1: PRE-LAUNCH -->
+        <div id="tab1" class="tab-content active">
+            <h2>🏠 Pending Launch Phase</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Contact Information</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Create New Lead Pending Launch Tile</div>
+                    
+                    <h3 style="margin-top: 20px; color: #2c3e50;">Borrower Contacts</h3>
+                    <div class="input-group">
+                        <label>BW1 Name:</label>
+                        <input type="text" id="bw1Name" />
+                    </div>
+                    <div class="input-group">
+                        <label>BW1 Number:</label>
+                        <input type="tel" id="bw1Number" />
+                    </div>
+                    <div class="input-group">
+                        <label>BW1 Email:</label>
+                        <input type="email" id="bw1Email" />
+                    </div>
+                    <div class="input-group">
+                        <label>BW2 Name:</label>
+                        <input type="text" id="bw2Name" />
+                    </div>
+                    <div class="input-group">
+                        <label>BW2 Number:</label>
+                        <input type="tel" id="bw2Number" />
+                    </div>
+                    <div class="input-group">
+                        <label>BW2 Email:</label>
+                        <input type="email" id="bw2Email" />
+                    </div>
+
+                    <h3 style="margin-top: 30px; color: #2c3e50;">Agent Contacts</h3>
+                    <div class="input-group">
+                        <label>Buyer's Agent Name:</label>
+                        <input type="text" id="buyerAgentName" />
+                    </div>
+                    <div class="input-group">
+                        <label>Buyer's Agent Number:</label>
+                        <input type="tel" id="buyerAgentNumber" />
+                    </div>
+                    <div class="input-group">
+                        <label>Buyer's Agent Email:</label>
+                        <input type="email" id="buyerAgentEmail" />
+                    </div>
+                    <div class="input-group">
+                        <label>Listing Agent Name:</label>
+                        <input type="text" id="listingAgentName" />
+                    </div>
+                    <div class="input-group">
+                        <label>Listing Agent Number:</label>
+                        <input type="tel" id="listingAgentNumber" />
+                    </div>
+                    <div class="input-group">
+                        <label>Listing Agent Email:</label>
+                        <input type="email" id="listingAgentEmail" />
+                    </div>
+                    
+                    <textarea class="notes-area" placeholder="Contact Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Introduction / Goals Call</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Move to Prep for Contact (Source)</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="taskAssignedIntro" onchange="handleCheckbox(this)" />
+                            <label for="taskAssignedIntro">Task Assigned to LO Intro Call</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Lead Source Type:</h4>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceRealtor" onchange="handleCheckbox(this)" />
+                            <label for="sourceRealtor">Source: Realtor</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceBuilder" onchange="handleCheckbox(this)" />
+                            <label for="sourceBuilder">Source: Builder</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourcePastCustomer" onchange="handleCheckbox(this)" />
+                            <label for="sourcePastCustomer">Source: Past Customer</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sourceOnline" onchange="handleCheckbox(this)" />
+                            <label for="sourceOnline">Source: Online</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Attempting Contact:</h4>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="callNewLead" onchange="handleCheckbox(this)" />
+                            <label for="callNewLead">Call New Lead (Leave VM)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="textMessage1" onchange="handleCheckbox(this)" />
+                            <label for="textMessage1">Text Message #1</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="email1" onchange="handleCheckbox(this)" />
+                            <label for="email1">Email #1</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Provide Agent Play-by-Play on Attempts..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Contact Made</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="goalsCallCompleted" onchange="handleCheckbox(this)" />
+                            <label for="goalsCallCompleted">Goals Call Completed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 20px;">Goals Discussion:</h4>
+                    <div class="input-group">
+                        <label>Payment:</label>
+                        <input type="text" id="goalPayment" />
+                    </div>
+                    <div class="input-group">
+                        <label>Cash to Close:</label>
+                        <input type="text" id="goalCashToClose" />
+                    </div>
+                    <div class="input-group">
+                        <label>How Long In Home:</label>
+                        <input type="text" id="goalTimeInHome" />
+                    </div>
+                    <div class="input-group">
+                        <label>Pending Sale/Payoff Debt:</label>
+                        <input type="text" id="goalPendingSale" />
+                    </div>
+
+                    <div class="bonzo-reminder" style="margin-top: 20px;">BONZO Actions:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bonzoContactSentOnline" onchange="handleCheckbox(this)" />
+                            <label for="bonzoContactSentOnline">Contact Made - Sent Online to Apply</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bonzoContactAppPhone" onchange="handleCheckbox(this)" />
+                            <label for="bonzoContactAppPhone">Contact Made - Application taken over phone</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bonzoContactNotReady" onchange="handleCheckbox(this)" />
+                            <label for="bonzoContactNotReady">Contact Made - not ready to apply yet</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Contact Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: APPLICATION -->
+        <div id="tab2" class="tab-content">
+            <h2>📝 Application Phase</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Application Tracking</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Track Application Progress</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="appStarted" onchange="handleCheckbox(this)" />
+                            <label for="appStarted">Application Started</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="appSubmitted" onchange="handleCheckbox(this)" />
+                            <label for="appSubmitted">Application Submitted</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="appMissingInfo" onchange="handleCheckbox(this)" />
+                            <label for="appMissingInfo">Application Submitted - Missing Information Not Ready for Scrub</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="appReadyScrub" onchange="handleCheckbox(this)" />
+                            <label for="appReadyScrub">Application Complete - Ready for Scrub</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="assignTaskScrub" onchange="handleCheckbox(this)" />
+                            <label for="assignTaskScrub">ASSIGN TASK TO MLO TO SCRUB FILE</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="scrubStarted" onchange="handleCheckbox(this)" />
+                            <label for="scrubStarted">Scrub has started</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="optOutNAF" onchange="handleCheckbox(this)" />
+                            <label for="optOutNAF">Opt Out Button NAF 1003 Screen</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="softPull" onchange="handleCheckbox(this)" />
+                            <label for="softPull">Soft Pull</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Application Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Loan Officer Scrub</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>Property Information</h3>
+                    <div class="input-group">
+                        <label>Applied Sales Price:</label>
+                        <input type="number" id="appliedSalesPrice" oninput="calculateLTV()" />
+                    </div>
+                    <div class="input-group">
+                        <label>Applied Down Payment:</label>
+                        <input type="number" id="appliedDownPayment" oninput="calculateLTV()" />
+                    </div>
+                    <div class="input-group">
+                        <label>Married:</label>
+                        <select id="married">
+                            <option value="">Select...</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>FTHB:</label>
+                        <select id="fthb">
+                            <option value="">Select...</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Rent/Own/LRF:</label>
+                        <select id="rentOwnLRF">
+                            <option value="">Select...</option>
+                            <option value="rent">Rent</option>
+                            <option value="own">Own</option>
+                            <option value="lrf">LRF</option>
+                        </select>
+                    </div>
+
+                    <div class="calc-section">
+                        <h3>📊 Auto Calculations</h3>
+                        <div class="calc-result">
+                            <strong>Loan Amount:</strong> <span id="calcLoanAmount">$0</span>
+                        </div>
+                        <div class="calc-result">
+                            <strong>LTV:</strong> <span id="calcLTV">0%</span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Credit Information</h3>
+                    <div class="input-group">
+                        <label>Credit Scores:</label>
+                        <input type="text" id="creditScores" placeholder="e.g., 720/715/710" />
+                    </div>
+                    <div class="input-group">
+                        <label>REF #:</label>
+                        <input type="text" id="refNumber" />
+                    </div>
+                    <div class="input-group">
+                        <label>Expiration Date:</label>
+                        <input type="date" id="creditExpiration" />
+                    </div>
+
+                    <h4>Credit Details:</h4>
+                    <textarea class="notes-area" placeholder="Collections, Charge-offs, Late payments, Revolving, Installment, Public records, Disputes on Derogs..."></textarea>
+
+                    <h3 style="margin-top: 30px;">Income Notes</h3>
+                    <textarea class="notes-area" placeholder="Income details and documentation notes..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Asset Notes</h3>
+                    <textarea class="notes-area" placeholder="Asset details and documentation notes..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Liability Notes</h3>
+                    <textarea class="notes-area" placeholder="Liability details and notes..."></textarea>
+
+                    <h3 style="margin-top: 20px;">AUS/Product</h3>
+                    <div class="input-group">
+                        <label>AUS Result:</label>
+                        <input type="text" id="ausResult" />
+                    </div>
+                    <div class="input-group">
+                        <label>Product Type:</label>
+                        <input type="text" id="productType" />
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Summary</h3>
+                    <textarea class="notes-area" placeholder="Summary of scrub findings..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Documentation List (PQL/TBD)</h3>
+                    <textarea class="notes-area" placeholder="Items needed now to issue PQL or submit for TBD..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Documentation List Post Contract</h3>
+                    <textarea class="notes-area" placeholder="Items needed once contract comes in..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: PRE-QUALIFIED -->
+        <div id="tab3" class="tab-content">
+            <h2>✅ Pre-Qualified Phase</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Pre-Qualification Tasks</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Move Tile to Pre-Qualified</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sendPQL" onchange="handleCheckbox(this)" />
+                            <label for="sendPQL">Send PQL / Flex Letter</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="setupINL" onchange="handleCheckbox(this)" />
+                            <label for="setupINL">Set Up INL for Hand off to Concierge</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="scheduleMCCall" onchange="handleCheckbox(this)" />
+                            <label for="scheduleMCCall">Schedule Mortgage Coach Call</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Pre-Qualification Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Pending PQL</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Move Tile to Pending PQL</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="setupAppReview" onchange="handleCheckbox(this)" />
+                            <label for="setupAppReview">Set up App Review Call</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="setupINLHandOff" onchange="handleCheckbox(this)" />
+                            <label for="setupINLHandOff">Set up INL for Hand Off</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Pending PQL Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Does Not Qualify</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Move Tile to Does Not Qualify</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="setupNextSteps" onchange="handleCheckbox(this)" />
+                            <label for="setupNextSteps">Set up Next Steps Call</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="moveDripFolder" onchange="handleCheckbox(this)" />
+                            <label for="moveDripFolder">Move to Drip Folder</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="submitUQUAL" onchange="handleCheckbox(this)" />
+                            <label for="submitUQUAL">Submit to UQUAL?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Does Not Qualify Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Mortgage Coach Scenarios</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label>Sales Price:</label>
+                        <input type="number" id="mcSalesPrice" />
+                    </div>
+                    <div class="input-group">
+                        <label>HOI:</label>
+                        <input type="number" id="mcHOI" />
+                    </div>
+                    <div class="input-group">
+                        <label>Taxes:</label>
+                        <input type="number" id="mcTaxes" />
+                    </div>
+                    <div class="input-group">
+                        <label>EMD:</label>
+                        <input type="number" id="mcEMD" />
+                    </div>
+                    <div class="input-group">
+                        <label>Link to MC:</label>
+                        <input type="url" id="mcLink" />
+                    </div>
+
+                    <div class="table-section">
+                        <h3>Mortgage Coach Scenarios</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Product</th>
+                                    <th>Investor</th>
+                                    <th>Rate</th>
+                                    <th>Points</th>
+                                    <th>PMI/FF</th>
+                                    <th>Lender Credit</th>
+                                    <th>Seller Credit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mcScenariosTable">
+                                <tr>
+                                    <td><input type="date" /></td>
+                                    <td><input type="text" /></td>
+                                    <td><input type="text" /></td>
+                                    <td><input type="number" step="0.125" /></td>
+                                    <td><input type="number" step="0.25" /></td>
+                                    <td><input type="number" /></td>
+                                    <td><input type="number" /></td>
+                                    <td><input type="number" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-primary" onclick="addMCRow()">+ Add Scenario</button>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Mortgage Coach Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: TBD PREP -->
+        <div id="tab4" class="tab-content">
+            <h2>🔍 Prep for TBD Section</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>TBD Preparation</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Assign TBD</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="assignTBD" onchange="handleCheckbox(this)" />
+                            <label for="assignTBD">Assign TBD</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="reviewNotesTBD" onchange="handleCheckbox(this)" />
+                            <label for="reviewNotesTBD">Review Notes</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="reviewINLTBD" onchange="handleCheckbox(this)" />
+                            <label for="reviewINLTBD">Review INL</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="readyTBD" onchange="handleCheckbox(this)" />
+                            <label for="readyTBD">Ready for TBD</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="notReadyTBD" onchange="handleCheckbox(this)" />
+                            <label for="notReadyTBD">Not Ready for TBD</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="assignTaskJrPA" onchange="handleCheckbox(this)" />
+                            <label for="assignTaskJrPA">Assign Task to Jr & PA</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Date Submitted to UW:</label>
+                        <input type="date" id="dateSubmittedUW" />
+                    </div>
+
+                    <textarea class="notes-area" placeholder="TBD Prep Notes... Complete TBD Template - Send to SouthOps@nafinc.com"></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>TBD Template Information</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label>Loan #:</label>
+                        <input type="text" id="tbdLoanNum" />
+                    </div>
+                    <div class="input-group">
+                        <label>Borrower Name(s):</label>
+                        <input type="text" id="tbdBorrowerNames" />
+                    </div>
+                    <div class="input-group">
+                        <label>Loan Officer:</label>
+                        <input type="text" id="tbdLoanOfficer" />
+                    </div>
+                    <div class="input-group">
+                        <label>Date:</label>
+                        <input type="date" id="tbdDate" />
+                    </div>
+                    <div class="input-group">
+                        <label>RUSH (y/n - reason):</label>
+                        <input type="text" id="tbdRush" />
+                    </div>
+                    <div class="input-group">
+                        <label>Loan Type:</label>
+                        <input type="text" id="tbdLoanType" />
+                    </div>
+                    <div class="input-group">
+                        <label>Investor:</label>
+                        <input type="text" id="tbdInvestor" />
+                    </div>
+                    <div class="input-group">
+                        <label>AUS (Manual or AE):</label>
+                        <input type="text" id="tbdAUS" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdPQLIssued" onchange="handleCheckbox(this)" />
+                            <label for="tbdPQLIssued">PQL Issued</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdPALIssued" onchange="handleCheckbox(this)" />
+                            <label for="tbdPALIssued">PAL Issued</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdReadyUWSub" onchange="handleCheckbox(this)" />
+                            <label for="tbdReadyUWSub">Ready for UW Sub</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Credit Notes</h3>
+                    <textarea class="notes-area" placeholder="Credit notes for TBD..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Employment/Income Notes</h3>
+                    <textarea class="notes-area" placeholder="Employment and income notes for TBD..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Asset Notes</h3>
+                    <textarea class="notes-area" placeholder="Asset notes for TBD..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Liability Notes</h3>
+                    <textarea class="notes-area" placeholder="Liability notes for TBD..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Current Docs Obtained</h3>
+                    <textarea class="notes-area" placeholder="List of current documents obtained..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Docs Still Needed</h3>
+                    <textarea class="notes-area" placeholder="Documents still needed..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Third Party Items Needed</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdWVOE" onchange="handleCheckbox(this)" />
+                            <label for="tbdWVOE">WVOE</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdVOR" onchange="handleCheckbox(this)" />
+                            <label for="tbdVOR">VOR</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdLOE" onchange="handleCheckbox(this)" />
+                            <label for="tbdLOE">LOE</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdSUP" onchange="handleCheckbox(this)" />
+                            <label for="tbdSUP">SUP</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdRESCORE" onchange="handleCheckbox(this)" />
+                            <label for="tbdRESCORE">RESCORE</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Additional Notes</h3>
+                    <textarea class="notes-area" placeholder="Additional TBD notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Out of Underwriting TBD</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label>Date Out of UW:</label>
+                        <input type="date" id="dateOutUW" />
+                    </div>
+                    <div class="input-group">
+                        <label>Underwriter Name:</label>
+                        <input type="text" id="underwriterName" />
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO Status:</div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdApproved" onchange="handleCheckbox(this)" />
+                            <label for="tbdApproved">Approved</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tbdSuspended" onchange="handleCheckbox(this)" />
+                            <label for="tbdSuspended">Suspended</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Conditions</h3>
+                    <textarea class="notes-area" placeholder="TBD conditions..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Needed Now</h3>
+                    <textarea class="notes-area" placeholder="Items needed immediately..."></textarea>
+
+                    <h3 style="margin-top: 20px;">Post Contract</h3>
+                    <textarea class="notes-area" placeholder="Items needed post contract..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Pending Contract</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Pending Contract Status</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="hasTBDPending" onchange="handleCheckbox(this)" />
+                            <label for="hasTBDPending">HAS TBD APPROVAL - PENDING CONTRACT</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="noTBDPending" onchange="handleCheckbox(this)" />
+                            <label for="noTBDPending">HAS NO TBD APPROVAL - PENDING CONTRACT</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="followUpCRM" onchange="handleCheckbox(this)" />
+                            <label for="followUpCRM">Follow up / CRM</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="scheduleNextFollowUp" onchange="handleCheckbox(this)" />
+                            <label for="scheduleNextFollowUp">Schedule Next Follow UP Pending Contract Campaign</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Pending Contract Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: CONTRACT -->
+        <div id="tab5" class="tab-content">
+            <h2>📑 Contract Received Phase</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Contract Information</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Contract Received - Prep for Respa</div>
+                    
+                    <div class="input-group">
+                        <label>Loan Type:</label>
+                        <input type="text" id="contractLoanType" />
+                    </div>
+                    <div class="input-group">
+                        <label>B1 Last 4 SSN:</label>
+                        <input type="text" id="b1SSN" maxlength="4" />
+                    </div>
+                    <div class="input-group">
+                        <label>B2 Last 4 SSN:</label>
+                        <input type="text" id="b2SSN" maxlength="4" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="mcUpdated" onchange="handleCheckbox(this)" />
+                            <label for="mcUpdated">Mortgage Coach Updated</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Disclosed Terms</h3>
+                    <div class="input-group">
+                        <label>Disclosed Rate:</label>
+                        <input type="number" id="disclosedRate" step="0.125" />
+                    </div>
+                    <div class="input-group">
+                        <label>Disclosed Points:</label>
+                        <input type="number" id="disclosedPoints" step="0.25" />
+                    </div>
+                    <div class="input-group">
+                        <label>Disclosed Investor:</label>
+                        <input type="text" id="disclosedInvestor" />
+                    </div>
+                    <div class="input-group">
+                        <label>Disclosed Credits:</label>
+                        <input type="number" id="disclosedCredits" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Float to Lock LE Tracker</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="loanLocked" onchange="handleCheckbox(this)" />
+                            <label for="loanLocked">Loan Locked</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Locked Terms</h3>
+                    <div class="input-group">
+                        <label>Locked Rate:</label>
+                        <input type="number" id="lockedRate" step="0.125" />
+                    </div>
+                    <div class="input-group">
+                        <label>Locked Points:</label>
+                        <input type="number" id="lockedPoints" step="0.25" />
+                    </div>
+                    <div class="input-group">
+                        <label>Locked Investor:</label>
+                        <input type="text" id="lockedInvestor" />
+                    </div>
+                    <div class="input-group">
+                        <label>Locked Credits:</label>
+                        <input type="number" id="lockedCredits" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="floatToLockSentLO" onchange="handleCheckbox(this)" />
+                            <label for="floatToLockSentLO">Float to Lock LE Sent to LO</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="floatToLockApproved" onchange="handleCheckbox(this)" />
+                            <label for="floatToLockApproved">Float to Lock LE Approved by LO</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sentToBorrowers" onchange="handleCheckbox(this)" />
+                            <label for="sentToBorrowers">Sent to Borrowers</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b1Signed" onchange="handleCheckbox(this)" />
+                            <label for="b1Signed">B1 Signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b2Signed" onchange="handleCheckbox(this)" />
+                            <label for="b2Signed">B2 Signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Float to Lock Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Post Contract Template</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label>Contract Received Date:</label>
+                        <input type="date" id="contractReceivedDate" />
+                    </div>
+                    <div class="input-group">
+                        <label>Credit Pulled Date:</label>
+                        <input type="date" id="creditPulledDate" />
+                    </div>
+                    <div class="input-group">
+                        <label>Credit Expiration Date:</label>
+                        <input type="date" id="creditExpirationDate" />
+                    </div>
+                    <div class="input-group">
+                        <label>Closing Date:</label>
+                        <input type="date" id="closingDate" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addedToCalendar" onchange="handleCheckbox(this)" />
+                            <label for="addedToCalendar">Added to Calendar</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Names & Title</h3>
+                    <div class="input-group">
+                        <label>Names on Contract:</label>
+                        <input type="text" id="namesOnContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>Names on Title:</label>
+                        <input type="text" id="namesOnTitle" />
+                    </div>
+                    <div class="input-group">
+                        <label>Trust, POA, Mail Away?:</label>
+                        <input type="text" id="trustPOA" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="namesMatchEncompass" onchange="handleCheckbox(this)" />
+                            <label for="namesMatchEncompass">Do names on contract match Encompass?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sellerLLC" onchange="handleCheckbox(this)" />
+                            <label for="sellerLLC">Is the Seller LLC?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="signingAuthority" onchange="handleCheckbox(this)" />
+                            <label for="signingAuthority">Do we have signing authority?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="flipRule90Day" onchange="handleCheckbox(this)" />
+                            <label for="flipRule90Day">Do we have 90 day Flip rule (FHA)?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="amendatoryClause" onchange="handleCheckbox(this)" />
+                            <label for="amendatoryClause">FHA/VA Amendatory Clause</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uspsValidation" onchange="handleCheckbox(this)" />
+                            <label for="uspsValidation">USPS Validation</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Property Details</h3>
+                    <div class="input-group">
+                        <label>Property Type:</label>
+                        <select id="propertyType">
+                            <option value="">Select...</option>
+                            <option value="pud">PUD</option>
+                            <option value="sfr">SFR</option>
+                            <option value="mfh">MFH</option>
+                            <option value="duplex">Duplex/Multi</option>
+                            <option value="condo">Condo</option>
+                        </select>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="identityOfInterest" onchange="handleCheckbox(this)" />
+                            <label for="identityOfInterest">Identity of Interest check (FHA Only)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="subjectMatchBorrower" onchange="handleCheckbox(this)" />
+                            <label for="subjectMatchBorrower">Does Subject Address match borrower address?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sellerRelateBuyer" onchange="handleCheckbox(this)" />
+                            <label for="sellerRelateBuyer">Does name of seller relate to buyer?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Sales Price:</label>
+                        <input type="number" id="contractSalesPrice" />
+                    </div>
+                    <div class="input-group">
+                        <label>Change Order/Counter/Addendum:</label>
+                        <input type="text" id="changeOrder" />
+                    </div>
+                    <div class="input-group">
+                        <label>LTV / Loan Amount:</label>
+                        <input type="text" id="ltvLoanAmount" />
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Earnest Money & Deposits</h3>
+                    <div class="input-group">
+                        <label>Earnest Money Amount:</label>
+                        <input type="number" id="earnestMoneyAmount" />
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="emCopyCheck" onchange="handleCheckbox(this)" />
+                            <label for="emCopyCheck">Copy of Check</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="emCopyWire" onchange="handleCheckbox(this)" />
+                            <label for="emCopyWire">Copy of Wire</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Options Deposit Amount:</label>
+                        <input type="number" id="optionsDepositAmount" />
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="optionsCopyCheck" onchange="handleCheckbox(this)" />
+                            <label for="optionsCopyCheck">Copy of Check</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="optionsCopyWire" onchange="handleCheckbox(this)" />
+                            <label for="optionsCopyWire">Copy of Wire</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Seller Credit:</label>
+                        <input type="number" id="sellerCredit" />
+                    </div>
+                    <div class="input-group">
+                        <label>Year Built:</label>
+                        <input type="number" id="yearBuilt" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="leadBasedPaint" onchange="handleCheckbox(this)" />
+                            <label for="leadBasedPaint">Lead Based Paint Addendum (FHA/VA/USDA 1978)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Taxes:</label>
+                        <input type="number" id="propertyTaxes" />
+                    </div>
+                    <div class="input-group">
+                        <label>HOI Amount for RESPA:</label>
+                        <input type="number" id="hoiAmountRespa" />
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Post Contract Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Realtor & Title Information</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>Buyer's Agent</h3>
+                    <div class="input-group">
+                        <label>Name:</label>
+                        <input type="text" id="buyerAgentNameContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>Number:</label>
+                        <input type="tel" id="buyerAgentNumberContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>Email:</label>
+                        <input type="email" id="buyerAgentEmailContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>License:</label>
+                        <input type="text" id="buyerAgentLicense" />
+                    </div>
+                    <div class="input-group">
+                        <label>Brokerage:</label>
+                        <input type="text" id="buyerAgentBrokerage" />
+                    </div>
+                    <div class="input-group">
+                        <label>Brokerage Address:</label>
+                        <input type="text" id="buyerAgentBrokerageAddress" />
+                    </div>
+                    <div class="input-group">
+                        <label>Brokerage License #:</label>
+                        <input type="text" id="buyerAgentBrokerageLicense" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="buyerAgentExternalContact" onchange="handleCheckbox(this)" />
+                            <label for="buyerAgentExternalContact">External Contact Created</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="buyerAgentBonzo" onchange="handleCheckbox(this)" />
+                            <label for="buyerAgentBonzo">Added to Bonzo</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Listing Agent</h3>
+                    <div class="input-group">
+                        <label>Name:</label>
+                        <input type="text" id="listingAgentNameContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>Number:</label>
+                        <input type="tel" id="listingAgentNumberContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>Email:</label>
+                        <input type="email" id="listingAgentEmailContract" />
+                    </div>
+                    <div class="input-group">
+                        <label>License:</label>
+                        <input type="text" id="listingAgentLicense" />
+                    </div>
+                    <div class="input-group">
+                        <label>Brokerage:</label>
+                        <input type="text" id="listingAgentBrokerage" />
+                    </div>
+                    <div class="input-group">
+                        <label>Brokerage Address:</label>
+                        <input type="text" id="listingAgentBrokerageAddress" />
+                    </div>
+                    <div class="input-group">
+                        <label>Brokerage License #:</label>
+                        <input type="text" id="listingAgentBrokerageLicense" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="listingAgentExternalContact" onchange="handleCheckbox(this)" />
+                            <label for="listingAgentExternalContact">External Contact Created</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="listingAgentBonzo" onchange="handleCheckbox(this)" />
+                            <label for="listingAgentBonzo">Added to Bonzo</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Title Company</h3>
+                    <div class="input-group">
+                        <label>Name (POC):</label>
+                        <input type="text" id="titleCompanyPOC" />
+                    </div>
+                    <div class="input-group">
+                        <label>Number:</label>
+                        <input type="tel" id="titleCompanyNumber" />
+                    </div>
+                    <div class="input-group">
+                        <label>Email:</label>
+                        <input type="email" id="titleCompanyEmail" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Encompass Updates & Disclosures</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="bonzo-reminder">BONZO: Move Title to Disclosures Sent</div>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="coverLetterCompleted" onchange="handleCheckbox(this)" />
+                            <label for="coverLetterCompleted">Cover Letter Completed (On NAF 1003)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addAgentsEncompass" onchange="handleCheckbox(this)" />
+                            <label for="addAgentsEncompass">Add Agents w/ license numbers to Encompass</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addTitleEncompass" onchange="handleCheckbox(this)" />
+                            <label for="addTitleEncompass">Add Title Contact to Encompass</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="requestPostContractINL" onchange="handleCheckbox(this)" />
+                            <label for="requestPostContractINL">Request Post Contract INL</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uploadDocsUnassigned" onchange="handleCheckbox(this)" />
+                            <label for="uploadDocsUnassigned">Upload any docs to Unassigned Section</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="runAUS" onchange="handleCheckbox(this)" />
+                            <label for="runAUS">RUN AUS</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Signatures</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b1Viewed" onchange="handleCheckbox(this)" />
+                            <label for="b1Viewed">Borrower 1 Viewed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b1SignedDisclosure" onchange="handleCheckbox(this)" />
+                            <label for="b1SignedDisclosure">Borrower 1 Signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b2Viewed" onchange="handleCheckbox(this)" />
+                            <label for="b2Viewed">Borrower 2 Viewed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b2SignedDisclosure" onchange="handleCheckbox(this)" />
+                            <label for="b2SignedDisclosure">Borrower 2 Signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="disclosuresPushSetup" onchange="handleCheckbox(this)" />
+                            <label for="disclosuresPushSetup">Once disclosures signed push to setup - Completed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="bonzo-reminder" style="margin-top: 20px;">BONZO: Move tile to Disclosures Signed</div>
+
+                    <div class="input-group">
+                        <label>Must be signed by date:</label>
+                        <input type="date" id="mustBeSignedBy" />
+                    </div>
+
+                    <h3 style="margin-top: 20px;">EMD Sourcing</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gettingCashBack" onchange="handleCheckbox(this)" />
+                            <label for="gettingCashBack">Getting Cash Back? Have we sourced EMD?</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Encompass & Disclosures Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: SETUP -->
+        <div id="tab6" class="tab-content">
+            <h2>🏗️ Set Up Checklist</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Getting Started in Encompass</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label>RESPA Triggered Date:</label>
+                        <input type="date" id="respaTriggeredDate" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="readNotes" onchange="handleCheckbox(this)" />
+                            <label for="readNotes">Read notes in Conversation log/cover letter to UW</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="assignFileYourself" onchange="handleCheckbox(this)" />
+                            <label for="assignFileYourself">Assign the file to yourself in milestone file contacts</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">DPA/2nds - Subordinate Loan</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="completeVendorAssignment" onchange="handleCheckbox(this)" />
+                            <label for="completeVendorAssignment">Complete Vendor Assignment Screen</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="completePA4506" onchange="handleCheckbox(this)" />
+                            <label for="completePA4506">Complete PA 4506 Checklist Screen</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="completeRequestTranscript" onchange="handleCheckbox(this)" />
+                            <label for="completeRequestTranscript">Complete Request for Transcript of Tax Screen</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="moveDocsLeftSide" onchange="handleCheckbox(this)" />
+                            <label for="moveDocsLeftSide">Move all other docs to left side</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">RUSH/14-Day Close/File Straight to UW</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkRush" onchange="handleCheckbox(this)" />
+                            <label for="checkRush">Check if file is a Rush</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="check14DayClose" onchange="handleCheckbox(this)" />
+                            <label for="check14DayClose">14 day close checklist</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="builderChecklist" onchange="handleCheckbox(this)" />
+                            <label for="builderChecklist">Builder checklist</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Setup Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Disclosure Tracking</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkITPBox" onchange="handleCheckbox(this)" />
+                            <label for="checkITPBox">Check ITP box in Disclosure Tracking and input date signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uploadInitialDisclosure" onchange="handleCheckbox(this)" />
+                            <label for="uploadInitialDisclosure">Upload initial disclosure package</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pullInitialLE" onchange="handleCheckbox(this)" />
+                            <label for="pullInitialLE">Pull Initial LE, label if locked or not</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addInitial1003" onchange="handleCheckbox(this)" />
+                            <label for="addInitial1003">Add Initial 1003 to CREDIT bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addITP" onchange="handleCheckbox(this)" />
+                            <label for="addITP">Add ITP to DISCLOSURES bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addBorrAuth" onchange="handleCheckbox(this)" />
+                            <label for="addBorrAuth">Add BORR AUTH to DISCLOSURES bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addStateForms" onchange="handleCheckbox(this)" />
+                            <label for="addStateForms">Add State Specific Forms (as needed)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addIRS8821" onchange="handleCheckbox(this)" />
+                            <label for="addIRS8821">Add IRS 8821 form to DISCLOSURES - 4506t bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addSSA89" onchange="handleCheckbox(this)" />
+                            <label for="addSSA89">Add SSA89 form to DISCLOSURES - SSA-89 bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">For FHA Loans</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addHUDAddendum" onchange="handleCheckbox(this)" />
+                            <label for="addHUDAddendum">Add HUD/VA Addendum (92900) to CREDIT bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">For VA Loans</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addAmendatoryEscape" onchange="handleCheckbox(this)" />
+                            <label for="addAmendatoryEscape">Add Amendatory/Escape Clause to ESCROW bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addChildCareLetter" onchange="handleCheckbox(this)" />
+                            <label for="addChildCareLetter">Add Child Care Letter</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addCreditPolicy" onchange="handleCheckbox(this)" />
+                            <label for="addCreditPolicy">Add Credit Policy</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addNearestLiving" onchange="handleCheckbox(this)" />
+                            <label for="addNearestLiving">Add Nearest Living Relative</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uploadLoanLimits" onchange="handleCheckbox(this)" />
+                            <label for="uploadLoanLimits">Upload Loan Limits/VA Funding Fee Table</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addVACCAuth" onchange="handleCheckbox(this)" />
+                            <label for="addVACCAuth">Add VA CC AUTH to DISCLOSURES bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Disclosure Tracking Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Review AUS & Property</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>Review AUS</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="confirmLoanAmountAUS" onchange="handleCheckbox(this)" />
+                            <label for="confirmLoanAmountAUS">Confirm loan amount, ratios (DTI/LTV), subject property match AUS</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="runAUSIfNotInFile" onchange="handleCheckbox(this)" />
+                            <label for="runAUSIfNotInFile">If not in file run AUS</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="verifyPropertyInfo" onchange="handleCheckbox(this)" />
+                            <label for="verifyPropertyInfo">Verify Property Information (PUD/CONDO)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="incomeDocRequired" onchange="handleCheckbox(this)" />
+                            <label for="incomeDocRequired">Income documentation required</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="assetDocRequired" onchange="handleCheckbox(this)" />
+                            <label for="assetDocRequired">Asset Documentation Required</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="transcriptsRequired" onchange="handleCheckbox(this)" />
+                            <label for="transcriptsRequired">Transcripts if required by AUS</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="verifyPIW" onchange="handleCheckbox(this)" />
+                            <label for="verifyPIW">Verify if PIW</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="saveUploadAUS" onchange="handleCheckbox(this)" />
+                            <label for="saveUploadAUS">Save a copy and upload to APPROVAL - AUS bucket</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Property Information</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pullLenderProfile" onchange="handleCheckbox(this)" />
+                            <label for="pullLenderProfile">Pull Lender profile report on Titlepro</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkAddress" onchange="handleCheckbox(this)" />
+                            <label for="checkAddress">Check address</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkPropertyType" onchange="handleCheckbox(this)" />
+                            <label for="checkPropertyType">Check property type</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkCurrentOwner" onchange="handleCheckbox(this)" />
+                            <label for="checkCurrentOwner">Check current owner</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkYearBuilt" onchange="handleCheckbox(this)" />
+                            <label for="checkYearBuilt">Check year built - enter in NAF 1003 if missing</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fhaCheckFlip" onchange="handleCheckbox(this)" />
+                            <label for="fhaCheckFlip">FHA - check last transfer date for potential flip</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="AUS & Property Review Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>eFolder Organization & Final Steps</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="moveAssetDocs" onchange="handleCheckbox(this)" />
+                            <label for="moveAssetDocs">Move asset documents to ASSETS buckets</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="confirmAssetBalances" onchange="handleCheckbox(this)" />
+                            <label for="confirmAssetBalances">Confirm asset balances match statements</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="moveIncomeDocs" onchange="handleCheckbox(this)" />
+                            <label for="moveIncomeDocs">Move income documents to INCOME buckets</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="moveOtherPropertyDocs" onchange="handleCheckbox(this)" />
+                            <label for="moveOtherPropertyDocs">Move other property documents (HOA, HOI, mtg stmts)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">FHA Loans</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="runCaseQuery" onchange="handleCheckbox(this)" />
+                            <label for="runCaseQuery">Run Case Query on subject property address</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="orderFHACase" onchange="handleCheckbox(this)" />
+                            <label for="orderFHACase">Order FHA case # in FHA Connection</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enterFHACase" onchange="handleCheckbox(this)" />
+                            <label for="enterFHACase">Enter FHA Case # on NAF 1003</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enterCAIVRS" onchange="handleCheckbox(this)" />
+                            <label for="enterCAIVRS">Enter CAIVRS from case # assignment</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="clickGetMI" onchange="handleCheckbox(this)" />
+                            <label for="clickGetMI">Click GET MI button if needed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">VA Loans</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="printCOE" onchange="handleCheckbox(this)" />
+                            <label for="printCOE">Print Certificate of Eligibility</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="runCAIVRSVA" onchange="handleCheckbox(this)" />
+                            <label for="runCAIVRSVA">Run CAIVRS through FHA Connection</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="orderAppraisalVA" onchange="handleCheckbox(this)" />
+                            <label for="orderAppraisalVA">Order Appraisal through VA Portal</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="enterVACase" onchange="handleCheckbox(this)" />
+                            <label for="enterVACase">Enter VA (LIN) Case # on NAF 1003</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Condo</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkNAFApproved" onchange="handleCheckbox(this)" />
+                            <label for="checkNAFApproved">Check to see if NAF approved</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkFHAVAApproval" onchange="handleCheckbox(this)" />
+                            <label for="checkFHAVAApproval">If FHA/VA, check FHA/VA website for approval</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Final Steps</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="runFraudReport" onchange="handleCheckbox(this)" />
+                            <label for="runFraudReport">Run Fraud Report</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="checkAlerts360" onchange="handleCheckbox(this)" />
+                            <label for="checkAlerts360">Check Alerts 360 > Milestone Completion Tab (all PASS)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="moveToProcessing" onchange="handleCheckbox(this)" />
+                            <label for="moveToProcessing">Move the file to processing milestone</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="addToMyPipeline" onchange="handleCheckbox(this)" />
+                            <label for="addToMyPipeline">Exit file and add to MY PIPELINE view</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Final Setup Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Third Party Items</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="table-section">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Contact Info</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Verification of Rent</strong></td>
+                                    <td>
+                                        <input type="text" placeholder="Name, Number, Email" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="vorOrdered" onchange="handleCheckbox(this)" />
+                                            <label for="vorOrdered">Ordered</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="vorReceived" onchange="handleCheckbox(this)" />
+                                            <label for="vorReceived">Received</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>VOE - Borrower 1</strong></td>
+                                    <td>
+                                        <input type="text" placeholder="Name, Number, Email" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="voeB1Ordered" onchange="handleCheckbox(this)" />
+                                            <label for="voeB1Ordered">Ordered</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="voeB1Received" onchange="handleCheckbox(this)" />
+                                            <label for="voeB1Received">Received</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>VOE - Borrower 2</strong></td>
+                                    <td>
+                                        <input type="text" placeholder="Name, Number, Email" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="voeB2Ordered" onchange="handleCheckbox(this)" />
+                                            <label for="voeB2Ordered">Ordered</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="voeB2Received" onchange="handleCheckbox(this)" />
+                                            <label for="voeB2Received">Received</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Title Work</strong></td>
+                                    <td>
+                                        <input type="text" placeholder="Name, Number, Email" />
+                                        <input type="number" placeholder="Amount" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="titleOrdered" onchange="handleCheckbox(this)" />
+                                            <label for="titleOrdered">Ordered</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="titleReceived" onchange="handleCheckbox(this)" />
+                                            <label for="titleReceived">Received</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hazard Insurance</strong></td>
+                                    <td>
+                                        <input type="text" placeholder="Name, Number, Email" />
+                                        <input type="number" placeholder="Amount" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="hoiOrdered" onchange="handleCheckbox(this)" />
+                                            <label for="hoiOrdered">Ordered</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="hoiReceived" onchange="handleCheckbox(this)" />
+                                            <label for="hoiReceived">Received</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tax Transcripts</strong></td>
+                                    <td>
+                                        <input type="text" placeholder="Years Needed" />
+                                        <input type="text" placeholder="Type Needed" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="transcriptsOrdered" onchange="handleCheckbox(this)" />
+                                            <label for="transcriptsOrdered">Ordered</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="transcriptsBack" onchange="handleCheckbox(this)" />
+                                            <label for="transcriptsBack">Back</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Appraisal</strong></td>
+                                    <td>
+                                        <input type="date" placeholder="Inspection Date" />
+                                        <input type="date" placeholder="Due Date" />
+                                    </td>
+                                    <td>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="appraisalOrdered" onchange="handleCheckbox(this)" />
+                                            <label for="appraisalOrdered">Ordered by NAF Credit</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="appraisalPaymentSent" onchange="handleCheckbox(this)" />
+                                            <label for="appraisalPaymentSent">Payment link sent</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="appraisalPaymentMade" onchange="handleCheckbox(this)" />
+                                            <label for="appraisalPaymentMade">Payment made</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="appraisalReceived" onchange="handleCheckbox(this)" />
+                                            <label for="appraisalReceived">Received</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="appraisalSentBorrower" onchange="handleCheckbox(this)" />
+                                            <label for="appraisalSentBorrower">Sent to Borrower</label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Third Party Items Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 7: PROCESSING -->
+        <div id="tab7" class="tab-content">
+            <h2>🔐 Processing and Underwriting</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Underwriting Tracking Log</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>1st Submission</h3>
+                    <div class="input-group">
+                        <label>Submitted to UW Date:</label>
+                        <input type="date" id="submittedUWDate1" />
+                    </div>
+                    <div class="input-group">
+                        <label>UW Assigned:</label>
+                        <input type="text" id="uwAssigned1" />
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Tile Moved to Submitted to UW</div>
+
+                    <div class="input-group">
+                        <label>Out of UW Date:</label>
+                        <input type="date" id="outUWDate1" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="approved1" onchange="handleCheckbox(this)" />
+                            <label for="approved1">Approved</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="suspended1" onchange="handleCheckbox(this)" />
+                            <label for="suspended1">Suspended</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Tile Moved (Status Updated)</div>
+
+                    <div class="input-group">
+                        <label>Intro Call to Borrower Date:</label>
+                        <input type="date" id="introCallDate" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="maxwellEmailSent" onchange="handleCheckbox(this)" />
+                            <label for="maxwellEmailSent">Maxwell Email sent to Borrower</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Resubmission - Mid Clear</h3>
+                    <div class="input-group">
+                        <label>Resubmission Date:</label>
+                        <input type="date" id="resubDate1" />
+                    </div>
+                    <div class="input-group">
+                        <label>Reason:</label>
+                        <textarea style="grid-column: 2; width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Updated CLA Date:</label>
+                        <input type="date" id="updatedCLADate1" />
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Tile Moved (Resubmitted)</div>
+
+                    <h3 style="margin-top: 30px;">Resubmission 2 - Mid Clear</h3>
+                    <div class="input-group">
+                        <label>Resub 2 Date:</label>
+                        <input type="date" id="resubDate2" />
+                    </div>
+                    <div class="input-group">
+                        <label>Reason:</label>
+                        <textarea style="grid-column: 2; width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Updated CLA Date:</label>
+                        <input type="date" id="updatedCLADate2" />
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Tile Moved (Resubmitted 2)</div>
+
+                    <h3 style="margin-top: 30px;">Final Submission</h3>
+                    <div class="input-group">
+                        <label>Final Submission Date:</label>
+                        <input type="date" id="finalSubmissionDate" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="clearToClose" onchange="handleCheckbox(this)" />
+                            <label for="clearToClose">Clear to Close</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="notCTC" onchange="handleCheckbox(this)" />
+                            <label for="notCTC">Not CTC</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Reason (if Not CTC):</label>
+                        <textarea style="grid-column: 2; width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px;"></textarea>
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Tile Moved to CTC (SEND DANCING PANDA 🐼)</div>
+
+                    <textarea class="notes-area" placeholder="Underwriting Tracking Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>UW Conditions Breakdown</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>Conditions Categories:</h3>
+                    <p style="margin: 10px 0; color: #6c757d;">Paste conditions from Excel here, categorized as: Borrower, Internal, PTD (Prior to Docs), PTF (Prior to Funding)</p>
+                    <textarea class="notes-area" style="min-height: 300px;" placeholder="Paste UW conditions breakdown from Excel...
+
+Borrower Conditions:
+- 
+
+Internal Conditions:
+-
+
+PTD (Prior to Docs) Conditions:
+-
+
+PTF (Prior to Funding) Conditions:
+-"></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Initial CD Checklist</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="uwApproval" onchange="handleCheckbox(this)" />
+                            <label for="uwApproval">UW Approval</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="loanLockedFunding" onchange="handleCheckbox(this)" />
+                            <label for="loanLockedFunding">Loan Locked (good through funding)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="floatToLockSent" onchange="handleCheckbox(this)" />
+                            <label for="floatToLockSent">Float to Lock LE sent (at least 1 day before CD)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cdMilestoneAlerts" onchange="handleCheckbox(this)" />
+                            <label for="cdMilestoneAlerts">CD Milestone Alerts Clear</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="prelimCDTitle" onchange="handleCheckbox(this)" />
+                            <label for="prelimCDTitle">Prelim CD from title</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="titleCommitment" onchange="handleCheckbox(this)" />
+                            <label for="titleCommitment">Title Commitment</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="taxCert" onchange="handleCheckbox(this)" />
+                            <label for="taxCert">Tax Cert</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="hoiQuote" onchange="handleCheckbox(this)" />
+                            <label for="hoiQuote">HOI (quote)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pmiCert" onchange="handleCheckbox(this)" />
+                            <label for="pmiCert">PMI Cert/Quote</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="akasAdded" onchange="handleCheckbox(this)" />
+                            <label for="akasAdded">AKA's added to 1003</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Request & Approval Process</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="requestProcessorSubmit" onchange="handleCheckbox(this)" />
+                            <label for="requestProcessorSubmit">Request Processor to submit to Closer</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="processorCheckedBox" onchange="handleCheckbox(this)" />
+                            <label for="processorCheckedBox">Processor checked box in Loan Estimate Page 1</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>ICD Sent to MLO/Team Date:</label>
+                        <input type="date" id="icdSentMLODate" />
+                    </div>
+                    <div class="input-group">
+                        <label>Approved by MLO/Team Date:</label>
+                        <input type="date" id="approvedMLODate" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="sentBorrowersCD" onchange="handleCheckbox(this)" />
+                            <label for="sentBorrowersCD">Sent to borrowers for Signature</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Move tile to CD Sent</div>
+
+                    <h3 style="margin-top: 20px;">Signatures</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b1ViewedCD" onchange="handleCheckbox(this)" />
+                            <label for="b1ViewedCD">Borrower 1 Viewed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b1SignedCD" onchange="handleCheckbox(this)" />
+                            <label for="b1SignedCD">Borrower 1 Signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b2ViewedCD" onchange="handleCheckbox(this)" />
+                            <label for="b2ViewedCD">Borrower 2 Viewed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="b2SignedCD" onchange="handleCheckbox(this)" />
+                            <label for="b2SignedCD">Borrower 2 Signed</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>MUST BE SIGNED BY DATE:</label>
+                        <input type="date" id="mustBeSignedByCD" />
+                    </div>
+
+                    <h3 style="margin-top: 20px;">EMD Sourcing</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="gettingCashBackCD" onchange="handleCheckbox(this)" />
+                            <label for="gettingCashBackCD">Getting Cash Back? Have we sourced EMD? Yes</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="notGettingCashBackCD" onchange="handleCheckbox(this)" />
+                            <label for="notGettingCashBackCD">Not Getting Cash Back / EMD Sourced: No</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Initial CD Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 8: CLOSING -->
+        <div id="tab8" class="tab-content">
+            <h2>💰 Closing and Funding</h2>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Submitted to Closing</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="input-group">
+                        <label>Submitted to Closing Date:</label>
+                        <input type="date" id="submittedClosingDate" />
+                    </div>
+
+                    <h3>Basic Loan Data</h3>
+                    <div class="input-group">
+                        <label>Loan Amount:</label>
+                        <input type="number" id="closingLoanAmount" />
+                    </div>
+                    <div class="input-group">
+                        <label>Interest Rate:</label>
+                        <input type="number" id="closingInterestRate" step="0.125" />
+                    </div>
+                    <div class="input-group">
+                        <label>LTV/CLTV:</label>
+                        <input type="text" id="closingLTVCLTV" />
+                    </div>
+                    <div class="input-group">
+                        <label>Monthly Hazard Amount:</label>
+                        <input type="number" id="closingMonthlyHazard" />
+                    </div>
+                    <div class="input-group">
+                        <label>Monthly Tax Amount:</label>
+                        <input type="number" id="closingMonthlyTax" />
+                    </div>
+                    <div class="input-group">
+                        <label>City, School, Flood:</label>
+                        <input type="text" id="closingCitySchoolFlood" />
+                    </div>
+                    <div class="input-group">
+                        <label>MI Amount:</label>
+                        <input type="number" id="closingMIAmount" />
+                    </div>
+                    <div class="input-group">
+                        <label>Upfront MIP:</label>
+                        <input type="number" id="closingUpfrontMIP" />
+                    </div>
+                    <div class="input-group">
+                        <label>DTI:</label>
+                        <input type="text" id="closingDTI" />
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Lock Verification</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="lockExpirationGoodFunding" onchange="handleCheckbox(this)" />
+                            <label for="lockExpirationGoodFunding">Expiration good through funding</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="allTermsMatch" onchange="handleCheckbox(this)" />
+                            <label for="allTermsMatch">All terms match current terms</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">1003 (URLA) Initial Verification</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="loanAmountMatchAUS" onchange="handleCheckbox(this)" />
+                            <label for="loanAmountMatchAUS">Loan amount, interest rate, program match AUS</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="propertyOccupancyMatch" onchange="handleCheckbox(this)" />
+                            <label for="propertyOccupancyMatch">Property and Occupancy Match (AUS, LOCK)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Submitted to Closing Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Credit & Income Verification</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>Credit</h3>
+                    <div class="input-group">
+                        <label>Invoice Amount:</label>
+                        <input type="number" id="creditInvoiceAmount" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="invoiceUploaded" onchange="handleCheckbox(this)" />
+                            <label for="invoiceUploaded">Invoice Uploaded</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="precloseCredit30Days" onchange="handleCheckbox(this)" />
+                            <label for="precloseCredit30Days">Preclose Credit report within 30 business days of docs</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="creditScoreMatchesAll" onchange="handleCheckbox(this)" />
+                            <label for="creditScoreMatchesAll">Credit Score Matches (Lock, AUS, Encompass)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Income</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tenDayVOEB1" onchange="handleCheckbox(this)" />
+                            <label for="tenDayVOEB1">10-Day VOE uploaded - B1 (if applicable)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tenDayVOEB2" onchange="handleCheckbox(this)" />
+                            <label for="tenDayVOEB2">10-Day VOE uploaded - B2 (if applicable)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Credit & Income Verification Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Title Verification</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="effectiveDateLess120" onchange="handleCheckbox(this)" />
+                            <label for="effectiveDateLess120">Effective date is less than 120 days old</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="verifyBorrowerNamesSystem" onchange="handleCheckbox(this)" />
+                            <label for="verifyBorrowerNamesSystem">Verify borrower's names in the system</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="borrowersListedContract" onchange="handleCheckbox(this)" />
+                            <label for="borrowersListedContract">Borrowers listed on the purchase contract</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="propertyTypeMatchesAll" onchange="handleCheckbox(this)" />
+                            <label for="propertyTypeMatchesAll">Property type matches (System, Appraisal, Lock)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="wireInstructions" onchange="handleCheckbox(this)" />
+                            <label for="wireInstructions">Wire Instructions</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Vested in Trust?</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="vestedTrustYes" onchange="handleCheckbox(this)" />
+                            <label for="vestedTrustYes">Yes (approval uploaded if applicable)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="vestedTrustNo" onchange="handleCheckbox(this)" />
+                            <label for="vestedTrustNo">No</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Additional Title Verifications</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="verifyAddressAll" onchange="handleCheckbox(this)" />
+                            <label for="verifyAddressAll">Verify Address (systems, USPS, Flood Cert, Appraisal)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="confirmVestingPrelim" onchange="handleCheckbox(this)" />
+                            <label for="confirmVestingPrelim">Confirm Vesting (Prelim, Vesting Amendment, Proposed Insured)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="verifySellerName" onchange="handleCheckbox(this)" />
+                            <label for="verifySellerName">Verify Seller's Name with purchase contract and vesting</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cplCorrectVerbiage" onchange="handleCheckbox(this)" />
+                            <label for="cplCorrectVerbiage">CPL with correct verbiage, matches prelim and wire instruction</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="taxCertOrInfo" onchange="handleCheckbox(this)" />
+                            <label for="taxCertOrInfo">Tax Cert or tax information provided on Prelim</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="poaApprovalUploaded" onchange="handleCheckbox(this)" />
+                            <label for="poaApprovalUploaded">POA approval uploaded (if applicable)</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 20px;">Funding Conditions</h3>
+                    <textarea class="notes-area" placeholder="Confirm any PTF invoices or items to be signed, collected or needed at closing..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Final CD & Funding</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>ICD Sent to Title</h3>
+                    <div class="input-group">
+                        <label>Title Contact Name:</label>
+                        <input type="text" id="titleContactNameFinal" />
+                    </div>
+                    <div class="input-group">
+                        <label>Email:</label>
+                        <input type="email" id="titleContactEmailFinal" />
+                    </div>
+                    <div class="input-group">
+                        <label>Date/Time Sent:</label>
+                        <input type="datetime-local" id="icdSentTitleDateTime" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="combinedCDReceived" onchange="handleCheckbox(this)" />
+                            <label for="combinedCDReceived">Combined CD received from Title</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="finalCDSentMLO" onchange="handleCheckbox(this)" />
+                            <label for="finalCDSentMLO">Final CD Sent to MLO</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="finalCDApproved" onchange="handleCheckbox(this)" />
+                            <label for="finalCDApproved">Final CD Approved</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Final Closing Amount</h3>
+                    <div class="input-group">
+                        <label>Amount Needed from Borrower:</label>
+                        <input type="number" id="finalClosingAmount" />
+                    </div>
+
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="paymentMethodWire" onchange="handleCheckbox(this)" />
+                            <label for="paymentMethodWire">Payment Method: Wire</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="paymentMethodCheck" onchange="handleCheckbox(this)" />
+                            <label for="paymentMethodCheck">Payment Method: Cashier's Check</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="emailTextSentBorrower" onchange="handleCheckbox(this)" />
+                            <label for="emailTextSentBorrower">Email/text sent to borrower for closing</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="amountConfirmedBuyer" onchange="handleCheckbox(this)" />
+                            <label for="amountConfirmedBuyer">Amount confirmed by buyer</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">Funding Complete!</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="loanFunded" onchange="handleCheckbox(this)" />
+                            <label for="loanFunded">Loan Funded 🎉</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <div class="bonzo-reminder">BONZO: Tile moved to Funded</div>
+                    <div class="bonzo-reminder">BONZO: Request Review Tile</div>
+
+                    <textarea class="notes-area" placeholder="Final CD & Funding Notes..."></textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <span>Post-Closing & Social Media</span>
+                    <span class="toggle">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>Social Media Story</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="borrowerCongrats" onchange="handleCheckbox(this)" />
+                            <label for="borrowerCongrats">Borrower Congrats</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="listingCongrats" onchange="handleCheckbox(this)" />
+                            <label for="listingCongrats">Listing Congrats</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="titleCompanyCongrats" onchange="handleCheckbox(this)" />
+                            <label for="titleCompanyCongrats">Title Company</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="buyersAgentCongrats" onchange="handleCheckbox(this)" />
+                            <label for="buyersAgentCongrats">Buyer's Agent</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Story Notes (ideas, themes, details to include)..."></textarea>
+
+                    <h3 style="margin-top: 30px;">Final Steps</h3>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="movedClosedLoansTab" onchange="handleCheckbox(this)" />
+                            <label for="movedClosedLoansTab">Moved to Closed Loans Tab</label>
+                            <span class="timestamp"></span>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="putBonzoPostClose" onchange="handleCheckbox(this)" />
+                            <label for="putBonzoPostClose">Put on Bonzo post close Campaign</label>
+                            <span class="timestamp"></span>
+                        </div>
+                    </div>
+
+                    <textarea class="notes-area" placeholder="Post-Closing Notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 9: REFERENCE -->
+        <div id="tab9" class="tab-content">
+            <h2>📚 Quick Reference & Resources</h2>
+
+            <div class="reference-section">
+                <h3>🏛️ Government Loan Programs</h3>
+                <strong>FHA Handbook:</strong>
+                <a href="https://www.hud.gov/program_offices/administration/hudclips/handbooks/hsgh" target="_blank">HUD Handbooks Main Page</a>
+                <a href="https://www.hud.gov/sites/documents/40001HSGH.PDF" target="_blank">FHA Single Family Housing Policy Handbook 4000.1 (PDF)</a>
+                <p style="margin: 10px 0; font-size: 14px; color: #856404;">💡 Tip: Use Ctrl+F to search PDF for keywords. Be mindful of ACCEPT TOTAL guidelines vs MANUAL</p>
+
+                <strong style="margin-top: 20px; display: block;">VA Handbook:</strong>
+                <a href="https://www.benefits.va.gov/HOMELOANS/resources_circulars.asp" target="_blank">VA Circulars and Handbooks</a>
+                <p style="margin: 10px 0; font-size: 14px; color: #856404;">💡 Tip: Google "VA Handbook [your question]" to find the relevant chapter. Check Mortgagee Letters for updates.</p>
+
+                <strong style="margin-top: 20px; display: block;">USDA Handbook:</strong>
+                <a href="https://www.rd.usda.gov/resources/directives/technical-handbooks" target="_blank">USDA Technical Handbooks</a>
+                <a href="https://www.rd.usda.gov/files/3555-1chapter01.pdf" target="_blank">SFH Guaranteed Loan Program Technical Handbook</a>
+            </div>
+
+            <div class="reference-section">
+                <h3>🏦 Conventional Loan Programs</h3>
+                <strong>Fannie Mae Selling Guide:</strong>
+                <a href="https://selling-guide.fanniemae.com/" target="_blank">Fannie Mae Selling Guide Main Page</a>
+                <a href="https://singlefamily.fanniemae.com/applications-technology/sf-askpoli" target="_blank">ASK POLI - Fannie Mae Search Engine</a>
+                <p style="margin: 10px 0; font-size: 14px; color: #856404;">💡 Servicer ID: 27423</p>
+                <p style="margin: 10px 0; font-size: 14px; color: #856404;">💡 Tip: Download full PDF and use Ctrl+F, or use the search bar on main page</p>
+
+                <strong style="margin-top: 20px; display: block;">Freddie Mac Selling Guide:</strong>
+                <a href="https://guide.freddiemac.com/" target="_blank">Freddie Mac Selling Guide Main Page</a>
+                <p style="margin: 10px 0; font-size: 14px; color: #856404;">💡 Tip: Use the search feature and "Browse Guide" tab for detailed guidelines</p>
+            </div>
+
+            <div class="reference-section">
+                <h3>📋 Important Rules & Guidelines</h3>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4 style="color: #3498db; margin-bottom: 10px;">The 5 W's and H Rule</h4>
+                    <p style="margin: 8px 0;"><strong>WHO:</strong> Who Placed the Order/Req (Name/Initials)</p>
+                    <p style="margin: 8px 0;"><strong>WHAT:</strong> What format did you make the request (Email, phone, fax, maxwell, bonzo)</p>
+                    <p style="margin: 8px 0;"><strong>WHEN:</strong> When did you make the request (Date/Time)</p>
+                    <p style="margin: 8px 0;"><strong>WHERE:</strong> Where did you send the request (Name of POC, Title, Number, Email, Fax#, Etc)</p>
+                    <p style="margin: 8px 0;"><strong>WHY:</strong> Why are you ordering it? (first time, corrections, clarifications, additional items)</p>
+                </div>
+            </div>
+
+            <div class="reference-section">
+                <h3>🔗 Tax & Property Resources</h3>
+                <a href="https://smartasset.com/taxes/alabama-property-tax-calculator" target="_blank">Alabama Property Tax Calculator - SmartAsset</a>
+                <a href="https://smartasset.com/taxes/florida-property-tax-calculator" target="_blank">Florida Property Tax Calculator - SmartAsset</a>
+            </div>
+
+            <div class="reference-section">
+                <h3>📧 Important Email Addresses</h3>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 8px 0;"><strong>TBD Submissions:</strong> SouthOps@nafinc.com</p>
+                    <p style="margin: 8px 0;"><strong>Flood Cert Corrections:</strong> hello@snapflood.com</p>
+                </div>
+            </div>
+
+            <div class="reference-section">
+                <h3>🛠️ Useful Tools & Links</h3>
+                <a href="https://www.hud.gov/fhaconnection" target="_blank">FHA Connection</a>
+                <a href="https://www.benefits.va.gov/homeloans/" target="_blank">VA Lender Portal</a>
+                <a href="https://tools.usps.com/zip-code-lookup.htm" target="_blank">USPS Address Validation</a>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="exportData()">📥 Export Dashboard Data</button>
+                <button class="btn btn-warning" onclick="printDashboard()">🖨️ Print Dashboard</button>
+                <button class="btn btn-success" onclick="saveProgress()">💾 Save Progress</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get EST timestamp
+        function getESTTimestamp() {
+            const now = new Date();
+            const estTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+            return estTime.toLocaleString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        // Handle checkbox changes with timestamp
+        function handleCheckbox(checkbox) {
+            const parent = checkbox.closest('.checkbox-item');
+            const timestamp = parent.querySelector('.timestamp');
+            
+            if (checkbox.checked) {
+                parent.classList.add('checked');
+                timestamp.textContent = getESTTimestamp();
+            } else {
+                parent.classList.remove('checked');
+                timestamp.textContent = '';
+            }
+            
+            updateProgress();
+            saveToLocalStorage();
+        }
+
+        // Toggle section collapse
+        function toggleSection(header) {
+            const section = header.closest('.section');
+            section.classList.toggle('collapsed');
+            saveToLocalStorage();
+        }
+
+        // Tab functionality
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+            
+            saveToLocalStorage();
+        }
+
+        // Calculate overall progress
+        function updateProgress() {
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checkedCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const percentage = Math.round((checkedCheckboxes.length / allCheckboxes.length) * 100);
+            
+            const progressFill = document.getElementById('overallProgress');
+            progressFill.style.width = percentage + '%';
+            progressFill.textContent = percentage + '%';
+        }
+
+        // LTV Calculation
+        function calculateLTV() {
+            const salesPrice = parseFloat(document.getElementById('appliedSalesPrice').value) || 0;
+            const downPayment = parseFloat(document.getElementById('appliedDownPayment').value) || 0;
+            
+            const loanAmount = salesPrice - downPayment;
+            const ltv = salesPrice > 0 ? ((loanAmount / salesPrice) * 100).toFixed(2) : 0;
+            
+            document.getElementById('calcLoanAmount').textContent = '$' + loanAmount.toLocaleString();
+            document.getElementById('calcLTV').textContent = ltv + '%';
+        }
+
+        // Add Mortgage Coach row
+        function addMCRow() {
+            const table = document.getElementById('mcScenariosTable');
+            const newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td><input type="date" /></td>
+                <td><input type="text" /></td>
+                <td><input type="text" /></td>
+                <td><input type="number" step="0.125" /></td>
+                <td><input type="number" step="0.25" /></td>
+                <td><input type="number" /></td>
+                <td><input type="number" /></td>
+                <td><input type="number" /></td>
+            `;
+        }
+
+        // Save to localStorage (in-memory simulation)
+        const dashboardData = {};
+        
+        function saveToLocalStorage() {
+            // Simulate saving - in real implementation, this would save to localStorage
+            console.log('Progress saved (simulation)');
+        }
+
+        // Export data
+        function exportData() {
+            const data = {
+                loanNumber: document.getElementById('loanNumber').value,
+                loanOfficer: document.getElementById('loanOfficer').value,
+                borrowerName: document.getElementById('borrowerName').value,
+                leadSource: document.getElementById('leadSource').value,
+                exportDate: getESTTimestamp()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'loan-dashboard-export.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Print dashboard
+        function printDashboard() {
+            window.print();
+        }
+
+        // Save progress notification
+        function saveProgress() {
+            saveToLocalStorage();
+            alert('✅ Progress saved successfully!\n\nTimestamp: ' + getESTTimestamp());
+        }
+
+        // Initialize on load
+        window.addEventListener('load', function() {
+            updateProgress();
+        });
+
+        // Auto-save every 2 minutes
+        setInterval(saveToLocalStorage, 120000);
+    </script>
+</body>
+</html>
